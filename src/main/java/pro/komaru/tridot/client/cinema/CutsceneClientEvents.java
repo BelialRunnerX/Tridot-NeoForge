@@ -1,0 +1,201 @@
+package pro.komaru.tridot.client.cinema;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import pro.komaru.tridot.Tridot;
+import pro.komaru.tridot.api.networking.PacketHandler;
+import pro.komaru.tridot.client.ClientTick;
+import pro.komaru.tridot.client.render.screenshake.ScreenshakeHandler;
+import pro.komaru.tridot.common.networking.packets.CutsceneSkippedPacket;
+
+@EventBusSubscriber(modid = Tridot.ID, bus = EventBusSubscriber.Bus.GAME, value = Dist.CLIENT)
+public class CutsceneClientEvents {
+
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Post event) {
+        if (CutsceneManager.active) {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.options.keyJump.isDown()) {
+                CutsceneManager.skipTicks++;
+                if (CutsceneManager.skipTicks >= CutsceneManager.skipThreshold) {
+                    CutsceneManager.stop();
+                    PacketHandler.sendToServer(new CutsceneSkippedPacket());
+                    return;
+                }
+            } else {
+                CutsceneManager.skipTicks = Math.max(0, CutsceneManager.skipTicks - 2);
+            }
+
+            if (Math.abs(CutsceneManager.currentFadeAlpha - CutsceneManager.targetFadeAlpha) > 0.01f) {
+                CutsceneManager.currentFadeAlpha += CutsceneManager.fadeStep;
+                CutsceneManager.currentFadeAlpha = Mth.clamp(CutsceneManager.currentFadeAlpha, 0.0f, 1.0f);
+            }
+
+            CutsceneManager.ticks++;
+            if (CutsceneManager.nodes != null && CutsceneManager.currentNodeIndex < CutsceneManager.nodes.size) {
+                CutsceneNode currentNode = CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex);
+                currentNode.onPlay.run();
+                if (currentNode.timedEvents.containsKey(CutsceneManager.ticksInCurrentNode)) {
+                    currentNode.timedEvents.get(CutsceneManager.ticksInCurrentNode).accept(currentNode);
+                }
+
+                CutsceneManager.ticksInCurrentNode++;
+                float nodeDelta = (float) CutsceneManager.ticksInCurrentNode / currentNode.duration;
+                Vec3 prevPos = CutsceneManager.currentNodeIndex == 0 ? CutsceneManager.startPos : CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex - 1).pos;
+
+                double x = currentNode.easing.apply(nodeDelta, (float) prevPos.x, (float) currentNode.pos.x);
+                double y = currentNode.easing.apply(nodeDelta, (float) prevPos.y, (float) currentNode.pos.y);
+                double z = currentNode.easing.apply(nodeDelta, (float) prevPos.z, (float) currentNode.pos.z);
+
+                ArmorStand dummy = CutsceneManager.getDummy();
+
+                dummy.xo = dummy.getX();
+                dummy.yo = dummy.getY();
+                dummy.zo = dummy.getZ();
+                dummy.setPos(x, y, z);
+
+                dummy.yRotO = dummy.getYRot();
+                dummy.xRotO = dummy.getXRot();
+
+                dummy.setYRot(currentNode.yaw);
+                dummy.setXRot(currentNode.pitch);
+                if (CutsceneManager.ticksInCurrentNode >= currentNode.duration) {
+                    CutsceneManager.ticksInCurrentNode = 0;
+                    if (currentNode.timedEvents.containsKey(currentNode.duration)) {
+                        currentNode.timedEvents.get(currentNode.duration).accept(currentNode);
+                    }
+
+                    CutsceneManager.currentNodeIndex++;
+                }
+            }
+
+            if (CutsceneManager.ticks >= CutsceneManager.maxTicks) {
+                CutsceneManager.stop();
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onCameraSetup(ViewportEvent.ComputeFov event) {
+        if (CutsceneManager.active && CutsceneManager.nodes != null && CutsceneManager.currentNodeIndex < CutsceneManager.nodes.size) {
+            CutsceneNode currentNode = CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex);
+            float partialTicks = ClientTick.mcPartialTick();
+            float nodeDelta = (CutsceneManager.ticksInCurrentNode + partialTicks) / currentNode.duration;
+            nodeDelta = Mth.clamp(nodeDelta, 0.0f, 1.0f);
+
+            float prevFov = CutsceneManager.currentNodeIndex == 0 ? CutsceneManager.startFov : CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex - 1).fov;
+            float finalFov = currentNode.easing.apply(nodeDelta, prevFov, currentNode.fov);
+
+            if (ScreenshakeHandler.intensityFov >= 0) {
+                finalFov += ScreenshakeHandler.randomizeOffset(ScreenshakeHandler.intensityFov);
+            }
+
+            if (ScreenshakeHandler.intensityFovNormalize != 0) {
+                finalFov += ScreenshakeHandler.intensityFovNormalize;
+            }
+
+            event.setFOV(finalFov);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
+        if (CutsceneManager.active && CutsceneManager.nodes != null && CutsceneManager.currentNodeIndex < CutsceneManager.nodes.size) {
+            CutsceneNode currentNode = CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex);
+            float partialTicks = ClientTick.partialTicks;
+            float nodeDelta = (CutsceneManager.ticksInCurrentNode + partialTicks) / currentNode.duration;
+            nodeDelta = Mth.clamp(nodeDelta, 0.0f, 1.0f);
+
+            float prevPitch = CutsceneManager.currentNodeIndex == 0 ? CutsceneManager.startPitch : CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex - 1).pitch;
+            float prevYaw = CutsceneManager.currentNodeIndex == 0 ? CutsceneManager.startYaw : CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex - 1).yaw;
+
+            float wrapYaw = Mth.wrapDegrees(currentNode.yaw - prevYaw);
+            float targetYaw = prevYaw + wrapYaw;
+
+            float wrapPitch = Mth.wrapDegrees(currentNode.pitch - prevPitch);
+            float targetPitch = prevPitch + wrapPitch;
+
+            float finalPitch = currentNode.easing.apply(nodeDelta, prevPitch, targetPitch);
+            float finalYaw = currentNode.easing.apply(nodeDelta, prevYaw, targetYaw);
+
+            if (ScreenshakeHandler.intensityRotation > 0) {
+                finalPitch += ScreenshakeHandler.randomizeOffset(ScreenshakeHandler.intensityRotation);
+                finalYaw += ScreenshakeHandler.randomizeOffset(ScreenshakeHandler.intensityRotation);
+            }
+
+            event.setPitch(finalPitch);
+            event.setYaw(finalYaw);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderHand(RenderHandEvent event) {
+        if (CutsceneManager.active) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderHUD(RenderGuiEvent.Pre event) {
+        if (CutsceneManager.active) {
+            event.setCanceled(true);
+            Minecraft mc = Minecraft.getInstance();
+            float progress = Math.min(1.0f, CutsceneManager.ticks / 60.0f);
+
+            // PORT NOTE: RenderGuiEvent no longer exposes the Window; GuiGraphics carries the scaled size.
+            int screenWidth = event.getGuiGraphics().guiWidth();
+            int screenHeight = event.getGuiGraphics().guiHeight();
+
+            int maxBarHeight = (int) (screenHeight * 0.15f);
+            int currentBarHeight = (int) (maxBarHeight * progress);
+            int color = 0xFF000000;
+
+            event.getGuiGraphics().fill(0, 0, screenWidth, currentBarHeight, color);
+            event.getGuiGraphics().fill(0, screenHeight - currentBarHeight, screenWidth, screenHeight, color);
+            if (CutsceneManager.skipTicks > 0) {
+                float skipPercent = (float) CutsceneManager.skipTicks / CutsceneManager.skipThreshold;
+                int barWidth = 100;
+                int barHeight = 2;
+                int x = (screenWidth - barWidth) / 2;
+                int y = 20;
+
+                event.getGuiGraphics().fill(x, y, x + barWidth, y + barHeight, 0x88000000);
+                event.getGuiGraphics().fill(x, y, x + (int) (barWidth * skipPercent), y + barHeight, 0xFFFFFFFF);
+
+                event.getGuiGraphics().drawCenteredString(mc.font, Component.translatable("tridot.cutscenes.skip_hold"), screenWidth / 2, y + 5, 0xFFFFFF);
+            } else {
+                event.getGuiGraphics().drawCenteredString(mc.font, Component.translatable("tridot.cutscenes.skip_hint"), screenWidth / 2, 20, 0xAAFFFFFF);
+            }
+
+            if (CutsceneManager.nodes != null && CutsceneManager.currentNodeIndex < CutsceneManager.nodes.size) {
+                CutsceneNode currentNode = CutsceneManager.nodes.get(CutsceneManager.currentNodeIndex);
+                if (CutsceneManager.currentFadeAlpha > 0) {
+                    int alphaInt = (int) (CutsceneManager.currentFadeAlpha * 255.0f);
+                    event.getGuiGraphics().fill(0, 0, screenWidth, screenHeight, (alphaInt << 24));
+                }
+
+                if (currentNode.component != null) {
+                    int x = screenWidth / 2;
+                    int y = screenHeight - currentBarHeight - 30;
+                    event.getGuiGraphics().drawCenteredString(mc.font, currentNode.component, x, y, 0xFFFFFF);
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLogOut(ClientPlayerNetworkEvent.LoggingOut e) {
+        if(CutsceneManager.active) CutsceneManager.stop();
+    }
+}

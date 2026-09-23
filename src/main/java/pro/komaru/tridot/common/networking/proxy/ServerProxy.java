@@ -1,0 +1,20 @@
+package pro.komaru.tridot.common.networking.proxy;
+
+import net.minecraft.sounds.*;
+import net.minecraft.world.entity.player.*;
+import net.minecraft.world.level.*;
+import pro.komaru.tridot.api.render.bossbars.*;
+
+import java.util.*;
+
+public class ServerProxy implements ISidedProxy{
+    @Override
+    public Player getPlayer(){
+        return null;
+    }
+
+    @Override
+    public Level getLevel(){
+        return null;
+    }
+}
