@@ -164,8 +164,10 @@ public class Events{
         player.getPersistentData().put(ARMOR_EFFECTS_TAG, tag);
     }
 
+    // PORT NOTE: was `static` in 1.20.1. Forge silently skipped static handlers on instance registration (so this never fired),
+    // NeoForge refuses to boot instead. Made an instance method, i.e. the dungeon-music packet handler is now active.
     @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
+    public void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
         if (server.getTickCount() % 100 != 0) return;
         for (Player player : server.getPlayerList().getPlayers()) {

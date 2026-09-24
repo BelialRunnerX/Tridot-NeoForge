@@ -76,7 +76,9 @@ public class Tridot {
         }
 
         ServerTickHandler.preInit(forgeBus);
-        forgeBus.register(this);
+        // PORT NOTE: forgeBus.register(this) removed - Tridot has no instance @SubscribeEvent methods (its only handler is the
+        // static mod-bus EntityAttributeModificationEvent listener) and NeoForge's event bus throws
+        // "has no @SubscribeEvent methods, but register was called anyway" instead of Forge's silent no-op.
         forgeBus.register(new CutsceneHelper());
         forgeBus.register(new Events());
     }

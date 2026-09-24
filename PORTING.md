@@ -109,6 +109,10 @@ Result: `gradlew build` and `gradlew publishToMavenLocal` succeed. Published coo
 
 No datagen sources exist in the repository (`src/generated` absent, no `GatherDataEvent` listeners). Nothing to port; the `data` run configuration is still declared for downstream use.
 
+## Runtime fixes (found while booting the Valoria datagen against this jar)
+
+- **Event bus strictness** — NeoForge's bus throws where Forge silently ignored: `forgeBus.register(this)` in `Tridot` (no instance `@SubscribeEvent` methods) was removed, and `common.Events.onServerTick` was `static` inside an instance-registered object. In 1.20.1 Forge skipped that method, so the dungeon-music `DungeonSoundPacket` broadcast **never ran**; it is now an instance method and active. Remove its `@SubscribeEvent` to restore the old (dead) behaviour.
+
 ## Unverified at runtime
 
 These compile and follow the 1.21.1 APIs, but were not exercised in a running game:
