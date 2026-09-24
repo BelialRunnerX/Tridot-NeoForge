@@ -115,6 +115,8 @@ No datagen sources exist in the repository (`src/generated` absent, no `GatherDa
 
 - **Side-loaded model keys** (found on the first real client launch) — `ModelEvent.RegisterAdditional.register` only accepts the `standalone` variant in 1.21 and Minecraft's fallback resource reload then re-fired `FMLCommonSetupEvent` for every mod. 1.20.1 registered skin / bow / crossbow / `_in_hand` models with the `inventory` variant, which loaded `models/item/<name>.json`; they are now `ModelResourceLocation.standalone(<modid>:item/<name>)` (`TridotModels.sideLoaded`, `SkinRegistryManager.getModelLocationSkin`, `LargeItemRenderer.getModelResourceLocation`) so the same files load, and every lookup uses the same key. The base item model is no longer passed to `RegisterAdditional` (it is baked automatically; an `inventory` key would be rejected). `TridotModels.addCustomModel` now yields `standalone(<modid>:<model>)` — callers that relied on the old `""` blockstate variant must pass `block/<name>`.
 
+- **Shaders** (second client launch) — vanilla 1.21 `fog.glsl` changed `fog_distance(mat4, vec3, int)` to `fog_distance(vec3, int)` (positions are camera-relative now). `include/common.glsl`'s `fogDistance` wrapper keeps its 1.20.1 signature but ignores the matrix, so all Tridot core shaders (`additive`, `additive_texture`, `translucent`, `translucent_texture`) and dependents including `tridot:common.glsl` compile again. A failing `RegisterShadersEvent` makes Minecraft retry the resource reload endlessly (stuck on the Mojang screen), which is how this surfaced.
+
 ## Unverified at runtime
 
 These compile and follow the 1.21.1 APIs, but were not exercised in a running game:

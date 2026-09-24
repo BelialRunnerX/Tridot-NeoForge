@@ -72,8 +72,11 @@ vec4 applyFog(vec4 color, float vertexDistance, float FogStart, float FogEnd, ve
     return linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
 }
 
+// PORT NOTE: vanilla 1.21 fog.glsl declares fog_distance(vec3 pos, int shape) - vertex positions are already camera-relative,
+// so the model-view matrix is no longer part of the distance. The helper keeps its old signature so the .vsh files and any
+// dependent mod's shaders that include common.glsl keep compiling; the matrix argument is ignored.
 float fogDistance(mat4 ModelViewMat, vec3 Position, int FogShape) {
-    return fog_distance(ModelViewMat, Position, FogShape);
+    return fog_distance(Position, FogShape);
 }
 
 vec4 mixLight(vec3 lightDir0, vec3 lightDir1, vec3 normal, vec4 color) {
