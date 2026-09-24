@@ -12,6 +12,8 @@ This repository is a **community port of [Tridot](https://github.com/KomaruPRO/T
 
 Every non-trivial rewrite (registration, events, networking, data components, rendering, mixins) is documented in [PORTING.md](PORTING.md), and each code site carries a `// PORT NOTE:` comment explaining the change. The library API was ported in full — nothing was stubbed out or removed.
 
+Fixes made after the initial port are listed by commit in **[CHANGELOG.md](CHANGELOG.md)**; open, inherited and not-yet-verified problems are tracked in **[KNOWN_ISSUES.md](KNOWN_ISSUES.md)**. Please check that list before opening an issue.
+
 Notable things dependent mods need to know:
 
 - Enchantments are data-driven in 1.21. Tridot's enchantments now apply through item tags (`tridot:enchantable/dash_weapon`, `radius_weapon`, `overdrive`, `shield`) — tag your items.
