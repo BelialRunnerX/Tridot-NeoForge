@@ -4,7 +4,9 @@ Status legend: **Open** (needs a fix), **Upstream** (present in the original 1.2
 
 ## Open
 
-_None known at the moment. The library has passed mod loading, resource reload and a dedicated-server world generation smoke test together with Valoria; gameplay features are still being play-tested._
+_None known at the moment._
+
+**Test status (2026-09-23):** working build, not fully validated. Loads and runs in a live world (client and dedicated server) together with Valoria; individual library features have not been play-tested one by one — see "Unverified in game".
 
 ## Upstream (inherited from Tridot 1.0.169)
 
