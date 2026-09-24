@@ -1,5 +1,7 @@
 # Tridot — NeoForge 1.21.1 port
 
+> 🇷🇺 Русская версия документации: [README.ru.md](README.ru.md) · [PORTING.ru.md](PORTING.ru.md) · [CHANGELOG.ru.md](CHANGELOG.ru.md) · [KNOWN_ISSUES.ru.md](KNOWN_ISSUES.ru.md). The English documentation is the authoritative version.
+
 This repository is a **community port of [Tridot](https://github.com/KomaruPRO/Tridot)** (by IriDark / the Komaru org) from Forge 1.20.1 to **NeoForge 1.21.1**.
 
 ## Please read before opening an issue
@@ -47,7 +49,17 @@ dependencies {
 }
 ```
 
-Requirements: Java 21, NeoForge 21.1.x, Minecraft 1.21.1. Optional integrations: Curios 9.x, Iris (replaces Oculus).
+### Requirements and tested versions
+
+| Component | Version | Where to get it |
+|---|---|---|
+| Minecraft | 1.21.1 | — |
+| Java | 21 (Temurin 21.0.12 used) | https://adoptium.net/ |
+| **NeoForge** | **21.1.251** (accepted range `[21.1,)`) | https://neoforged.net/ · https://projects.neoforged.net/neoforged/neoforge |
+| Curios API (optional, range `[9,)`) | 9.5.1+1.21.1 | https://modrinth.com/mod/curios · https://www.curseforge.com/minecraft/mc-mods/curios |
+| Iris (optional, replaces Oculus) | 1.8.12+1.21.1-neoforge | https://modrinth.com/mod/iris |
+
+Build tooling: Gradle 8.14.5, ModDevGradle 2.0.147, Parchment 2024.11.17 (see `gradle.properties`).
 
 ## What Tridot offers
 

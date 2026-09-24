@@ -10,7 +10,7 @@ import net.minecraft.world.level.*;
 import pro.komaru.tridot.*;
 
 /**
- * PORT NOTE: enchantments are datapack registry entries in 1.21. The nine {@code Enchantment} subclasses were
+ * PORT NOTE (API change - dependents must tag their items): enchantments are datapack registry entries in 1.21. The nine {@code Enchantment} subclasses were
  * replaced by JSON definitions under {@code data/tridot/enchantment/} and this class now exposes their
  * {@link ResourceKey}s plus level lookup helpers.
  * <p>

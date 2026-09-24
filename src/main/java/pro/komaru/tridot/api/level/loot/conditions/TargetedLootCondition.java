@@ -12,7 +12,7 @@ public abstract class TargetedLootCondition implements LootItemCondition{
     }
 
     /**
-     * PORT NOTE: vanilla renamed the loot entity targets in 1.21 (killer -> attacker, direct_killer -> direct_attacker,
+     * PORT NOTE (API change - compatibility superset): vanilla renamed the loot entity targets in 1.21 (killer -> attacker, direct_killer -> direct_attacker,
      * killer_player -> attacking_player). Data packs and dependent mods written for 1.20.1 still use the old names, so the
      * codec accepts both spellings; serialisation always writes the 1.21 name.
      */

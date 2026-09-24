@@ -164,7 +164,7 @@ public class Events{
         player.getPersistentData().put(ARMOR_EFFECTS_TAG, tag);
     }
 
-    // PORT NOTE: was `static` in 1.20.1. Forge silently skipped static handlers on instance registration (so this never fired),
+    // PORT NOTE (behaviour change): was `static` in 1.20.1. Forge silently skipped static handlers on instance registration (so this never fired),
     // NeoForge refuses to boot instead. Made an instance method, i.e. the dungeon-music packet handler is now active.
     @SubscribeEvent
     public void onServerTick(ServerTickEvent.Post event) {
@@ -241,7 +241,7 @@ public class Events{
         }
     }
 
-    // PORT NOTE: LivingHurtEvent (fired before vanilla armor) -> LivingIncomingDamageEvent, which is the NeoForge
+    // PORT NOTE (behaviour change - event timing): LivingHurtEvent (fired before vanilla armor) -> LivingIncomingDamageEvent, which is the NeoForge
     // hook for adjusting the raw amount before armor/absorption are applied.
     @SubscribeEvent
     public void onLivingHurt(LivingIncomingDamageEvent event) {

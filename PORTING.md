@@ -8,6 +8,21 @@ Items under **Unverified at runtime** compile but could not be exercised without
 Result: `gradlew build` and `gradlew publishToMavenLocal` succeed. Published coordinates:
 `pro.komaru:Tridot:1.21.1-1.0.169` (plus `:api` and `:sources` classifiers).
 
+## Nature of the changes — how to read this document and the code comments
+
+Every `// PORT NOTE:` comment in the code carries a qualifier that states what kind of change it is; the tables below use the same wording:
+
+| Marker | Meaning | Where it applies |
+|---|---|---|
+| `PORT NOTE:` (no qualifier) | **Mechanical API translation** — same behaviour as 1.20.1, only the API changed (Forge → NeoForge renames, `RegistryObject` → `DeferredHolder`, new event/rendering/networking APIs, NBT → data components, 1.21 codecs). The vast majority of sites. | Everywhere |
+| `PORT NOTE (behaviour change …):` | **Runtime behaviour differs from 1.20.1**, forced by the platform. Listed in KNOWN_ISSUES.md. | `Events.onServerTick` (dead static handler is now live), `Events` percent armour (`LivingIncomingDamageEvent` fires earlier than `LivingHurtEvent`) |
+| `PORT NOTE (upstream bug fix):` | **A latent bug of the original code was fixed.** | `MusicModifier.DungeonMusic.isPlayerInStructure` (bounding box of an invalid structure start) |
+| `PORT NOTE (API change …):` | **Public API differs for dependent mods**; dependents must adapt or at least know. Listed in KNOWN_ISSUES.md → "Changed behaviour for dependent mods". | `TagsRegistry.ENCHANTABLE_*` / `EnchantmentsRegistry` (tags instead of `EnchantmentCategory`), `TridotModels.sideLoaded`/`addCustomModel`/`getBowModels`/`getCrossbowModels`, `SkinRegistryManager.getModelLocationSkin`, `LargeItemRenderer.getModelResourceLocation`, `TargetedLootCondition.TARGET_CODEC` (accepts old and new target names), `PacketHandler.addRegistration`, `Capabilities` (attachments), attribute modifier ids as `ResourceLocation` |
+
+Things that did **not** change: library semantics and numeric behaviour of screenshake, splashes, music modifiers, percent armour values, particle/rendering builders; ids and config keys; shipped assets (apart from the shader fog helper and model key scheme described below).
+
+Exact dependency versions with links are in README.md → "Requirements and tested versions".
+
 ## Phase 1 — build scripts & mod metadata
 
 | Change | Detail |
@@ -133,7 +148,7 @@ These compile and follow the 1.21.1 APIs, but were not exercised in a running ga
 - **Percent armor via `LivingIncomingDamageEvent`** — fires earlier than the old `LivingHurtEvent`; ordering relative to other mods' damage modifiers may differ.
 - **Enchantable item tags** — dependent mods must add their items to `tridot:enchantable/*` tags; behaviour was previously provided by `EnchantmentCategory` predicates.
 - **Attachments vs capabilities** — `copyOnDeath` mirrors the old `PlayerEvent.Clone` copy; providers that relied on lazy `LazyOptional` semantics now get eager attachment creation.
-- **`sendToTracking(chunk)`** — 64-block player radius emulation instead of Forge's exact chunk-tracking target.
+- **`sendToTracking(chunk)`** — Tridot's own `TRACKING_CHUNK_AND_NEAR` distributor (players tracking the chunk *and* within 64 blocks) is re-implemented on `ChunkMap.getPlayers`; same semantics, not yet exercised with many players.
 - **`ClientTick`** double increment quirk (tick counters advanced both in the tick and render events) was kept as-is for parity.
 - **Boat passenger attachment points**, **shield disable chance**, **projectile enchantment application via `EnchantmentHelper.onProjectileSpawned`** — semantics follow vanilla 1.21.1 but were not compared frame-by-frame with 1.20.1.
 - **`mods.toml` license field** declares `GPL-2.0` as in the original repository, while the shipped `LICENSE` file is GPL-3.0; both were preserved unchanged.

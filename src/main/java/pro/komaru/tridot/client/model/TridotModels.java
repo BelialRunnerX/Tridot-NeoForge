@@ -49,7 +49,7 @@ public class TridotModels{
         return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(modId, layer), "main");
     }
 
-    // PORT NOTE: 1.20.1 returned ModelResourceLocation(modId, model, "") which resolved through blockstates/<model>.json; NeoForge
+    // PORT NOTE (API change - callers must adapt): 1.20.1 returned ModelResourceLocation(modId, model, "") which resolved through blockstates/<model>.json; NeoForge
     // 1.21 side-loaded models must be "standalone" and load models/<model>.json directly - pass "block/<name>" for the old behaviour.
     public static ModelResourceLocation addCustomModel(String modId, String model){
         return ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(modId, model));
@@ -64,7 +64,7 @@ public class TridotModels{
     }
 
     /**
-     * PORT NOTE: extra item models (pulling/arrow/firework/in-hand variants) are side-loaded through
+     * PORT NOTE (API change - new key scheme for dependents): extra item models (pulling/arrow/firework/in-hand variants) are side-loaded through
      * ModelEvent.RegisterAdditional. 1.20.1 registered them with the "inventory" variant, which loaded models/item/<name>.json;
      * NeoForge 1.21 only accepts the "standalone" variant, which loads models/<path>.json, so the "item/" prefix keeps the
      * same model files. Every lookup of such a model must use this key.
@@ -101,7 +101,7 @@ public class TridotModels{
         addCrossbowItemModel(map, item, new CrossbowItemOverrides());
     }
 
-    // PORT NOTE: the base "inventory" model is baked automatically for every registered item and may not be passed to
+    // PORT NOTE (API change - list no longer contains the base model): the base "inventory" model is baked automatically for every registered item and may not be passed to
     // RegisterAdditional in 1.21 (only standalone keys are accepted), so only the extra variants are listed here.
     public static ArrayList<ModelResourceLocation> getCrossbowModels(String modId, String item) {
         ArrayList<ModelResourceLocation> models = new ArrayList<>();

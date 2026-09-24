@@ -40,7 +40,7 @@ public class TagsRegistry{
     public static final TagKey<Item> CAN_DISABLE_SHIELD = item(Tridot.ofTridot("can_disable_shield"));
     public static final TagKey<DamageType> BYPASSES_PARRY = damage(Tridot.ofTridot("bypasses_parry"));
 
-    // PORT NOTE: replacements for the 1.20.1 EnchantmentCategory predicates; dependents tag their items into these.
+    // PORT NOTE (API change - dependents must tag their items): replacements for the 1.20.1 EnchantmentCategory predicates; dependents tag their items into these.
     /** Items that implement {@code DashItem}; makes {@code tridot:dash} applicable. */
     public static final TagKey<Item> ENCHANTABLE_DASH_WEAPON = EnchantmentsRegistry.DASH_WEAPON;
     /** Items that implement {@code RadiusItem}; makes {@code tridot:radius} applicable. */
