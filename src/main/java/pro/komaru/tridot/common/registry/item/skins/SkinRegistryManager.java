@@ -88,11 +88,14 @@ public class SkinRegistryManager {
         ItemSkinModels.addModelSkins(modId + ":" + skin, map.get(SkinRegistryManager.getModelLocationSkin(modId + ":" + skin)));
     }
 
+    // PORT NOTE: skin models are side-loaded through ModelEvent.RegisterAdditional. In 1.20.1 that took the "inventory" variant
+    // (which loaded models/item/skin/<skin>.json); NeoForge 1.21 only accepts the "standalone" variant, which loads
+    // models/<path>.json - hence the explicit "item/" prefix keeps the same model files.
     public static ModelResourceLocation getModelLocationSkin(String id){
         int i = id.indexOf(":");
         String modId = id.substring(0, i);
         String skinId = id.substring(i + 1);
-        return ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(modId, "skin/" + skinId));
+        return ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(modId, "item/skin/" + skinId));
     }
 
     @EventBusSubscriber(modid = Tridot.ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)

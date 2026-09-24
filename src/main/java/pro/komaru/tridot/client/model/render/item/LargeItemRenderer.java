@@ -19,13 +19,20 @@ import java.util.*;
 @OnlyIn(Dist.CLIENT)
 public class LargeItemRenderer{
 
+    // PORT NOTE: the "_in_hand" model is side-loaded (ModelEvent.RegisterAdditional). 1.20.1 used the "inventory" variant, which
+    // loaded models/item/<item>_in_hand.json; NeoForge 1.21 requires the "standalone" variant, which loads models/<path>.json,
+    // so the "item/" prefix keeps the same file. Renderers must look the model up with this exact key.
     public static ModelResourceLocation getModelResourceLocation(String modId, String item){
-        return ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_in_hand"));
+        return ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(modId, "item/" + item + "_in_hand"));
     }
 
-    // PORT NOTE: the bake map is keyed by ModelResourceLocation in 1.21.
+    // PORT NOTE: the bake map is keyed by ModelResourceLocation in 1.21. The default model is the item's own "inventory" model
+    // for real items; for side-loaded skins ("skin/<name>") it is the standalone model registered by SkinRegistryManager.
     public static void bakeModel(Map<ModelResourceLocation, BakedModel> map, String modId, String item, CustomItemOverrides itemOverrides){
         ModelResourceLocation modelInventory = ModelResourceLocation.inventory(ResourceLocation.fromNamespaceAndPath(modId, item));
+        if(!map.containsKey(modelInventory)){
+            modelInventory = ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(modId, "item/" + item));
+        }
         ModelResourceLocation modelHand = getModelResourceLocation(modId, item);
 
         BakedModel bakedModelDefault = map.get(modelInventory);

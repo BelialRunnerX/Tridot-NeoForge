@@ -49,6 +49,8 @@ public class TridotModels{
         return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(modId, layer), "main");
     }
 
+    // PORT NOTE: 1.20.1 returned ModelResourceLocation(modId, model, "") which resolved through blockstates/<model>.json; NeoForge
+    // 1.21 side-loaded models must be "standalone" and load models/<model>.json directly - pass "block/<name>" for the old behaviour.
     public static ModelResourceLocation addCustomModel(String modId, String model){
         return ModelResourceLocation.standalone(ResourceLocation.fromNamespaceAndPath(modId, model));
     }
@@ -59,6 +61,20 @@ public class TridotModels{
 
     public static ModelResourceLocation inventory(ResourceLocation item, String suffix){
         return ModelResourceLocation.inventory(item.withSuffix(suffix));
+    }
+
+    /**
+     * PORT NOTE: extra item models (pulling/arrow/firework/in-hand variants) are side-loaded through
+     * ModelEvent.RegisterAdditional. 1.20.1 registered them with the "inventory" variant, which loaded models/item/<name>.json;
+     * NeoForge 1.21 only accepts the "standalone" variant, which loads models/<path>.json, so the "item/" prefix keeps the
+     * same model files. Every lookup of such a model must use this key.
+     */
+    public static ModelResourceLocation sideLoaded(ResourceLocation item){
+        return ModelResourceLocation.standalone(item.withPrefix("item/"));
+    }
+
+    public static ModelResourceLocation sideLoaded(ResourceLocation item, String suffix){
+        return sideLoaded(item.withSuffix(suffix));
     }
 
     public static void addCustomRenderItemModel(Map<ModelResourceLocation, BakedModel> map, ResourceLocation item){
@@ -72,11 +88,11 @@ public class TridotModels{
         CustomModel customModel = new CustomModel(model, itemOverrides);
 
         for (int i = 0; i < 3; i++) {
-            BakedModel pullModel = map.get(inventory(item, "_pulling_" + i));
+            BakedModel pullModel = map.get(sideLoaded(item, "_pulling_" + i));
             itemOverrides.pullingModels.add(pullModel);
         }
-        itemOverrides.arrowModel = map.get(inventory(item, "_arrow"));
-        itemOverrides.fireworkModel = map.get(inventory(item, "_firework"));
+        itemOverrides.arrowModel = map.get(sideLoaded(item, "_arrow"));
+        itemOverrides.fireworkModel = map.get(sideLoaded(item, "_firework"));
 
         map.replace(inventory(item), customModel);
     }
@@ -85,14 +101,15 @@ public class TridotModels{
         addCrossbowItemModel(map, item, new CrossbowItemOverrides());
     }
 
+    // PORT NOTE: the base "inventory" model is baked automatically for every registered item and may not be passed to
+    // RegisterAdditional in 1.21 (only standalone keys are accepted), so only the extra variants are listed here.
     public static ArrayList<ModelResourceLocation> getCrossbowModels(String modId, String item) {
         ArrayList<ModelResourceLocation> models = new ArrayList<>();
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item)));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_0")));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_1")));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_2")));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_arrow")));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_firework")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_0")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_1")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_2")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_arrow")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_firework")));
         return models;
     }
 
@@ -107,7 +124,7 @@ public class TridotModels{
         CustomModel customModel = new CustomModel(model, itemOverrides);
 
         for(int i = 0; i < 3; i++){
-            BakedModel pullModel = map.get(inventory(item, "_pulling_" + i));
+            BakedModel pullModel = map.get(sideLoaded(item, "_pulling_" + i));
             itemOverrides.models.add(pullModel);
         }
 
@@ -118,12 +135,12 @@ public class TridotModels{
         addBowItemModel(map, item, new BowSkinItemOverrides());
     }
 
+    // PORT NOTE: see getCrossbowModels - base item model excluded, extra variants are standalone "item/..." keys.
     public static ArrayList<ModelResourceLocation> getBowModels(String modId, String item){
         ArrayList<ModelResourceLocation> models = new ArrayList<>();
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item)));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_0")));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_1")));
-        models.add(inventory(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_2")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_0")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_1")));
+        models.add(sideLoaded(ResourceLocation.fromNamespaceAndPath(modId, item + "_pulling_2")));
         return models;
     }
 

@@ -113,6 +113,8 @@ No datagen sources exist in the repository (`src/generated` absent, no `GatherDa
 
 - **Event bus strictness** — NeoForge's bus throws where Forge silently ignored: `forgeBus.register(this)` in `Tridot` (no instance `@SubscribeEvent` methods) was removed, and `common.Events.onServerTick` was `static` inside an instance-registered object. In 1.20.1 Forge skipped that method, so the dungeon-music `DungeonSoundPacket` broadcast **never ran**; it is now an instance method and active. Remove its `@SubscribeEvent` to restore the old (dead) behaviour.
 
+- **Side-loaded model keys** (found on the first real client launch) — `ModelEvent.RegisterAdditional.register` only accepts the `standalone` variant in 1.21 and Minecraft's fallback resource reload then re-fired `FMLCommonSetupEvent` for every mod. 1.20.1 registered skin / bow / crossbow / `_in_hand` models with the `inventory` variant, which loaded `models/item/<name>.json`; they are now `ModelResourceLocation.standalone(<modid>:item/<name>)` (`TridotModels.sideLoaded`, `SkinRegistryManager.getModelLocationSkin`, `LargeItemRenderer.getModelResourceLocation`) so the same files load, and every lookup uses the same key. The base item model is no longer passed to `RegisterAdditional` (it is baked automatically; an `inventory` key would be rejected). `TridotModels.addCustomModel` now yields `standalone(<modid>:<model>)` — callers that relied on the old `""` blockstate variant must pass `block/<name>`.
+
 ## Unverified at runtime
 
 These compile and follow the 1.21.1 APIs, but were not exercised in a running game:
