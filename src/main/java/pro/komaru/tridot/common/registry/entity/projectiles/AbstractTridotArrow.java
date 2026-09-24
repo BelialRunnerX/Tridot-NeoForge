@@ -135,6 +135,9 @@ public abstract class AbstractTridotArrow extends AbstractArrow{
 
     @Override
     protected ItemStack getDefaultPickupItem(){
-        return arrowItem.isEmpty() ? new ItemStack(Items.ARROW) : arrowItem;
+        // PORT NOTE (runtime fix): AbstractArrow's 1.21 constructor calls getDefaultPickupItem() before subclass field
+        // initialisers run, so arrowItem is still null at that point (seen as a server NPE when releasing Valoria's
+        // Phantasm Bow). Treat null like "no custom pickup item".
+        return arrowItem == null || arrowItem.isEmpty() ? new ItemStack(Items.ARROW) : arrowItem;
     }
 }
