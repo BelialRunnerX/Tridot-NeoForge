@@ -31,7 +31,8 @@ _None known at the moment._
 
 - Delayed render buffers / post-processing (`glow` post shader), especially under Iris.
 - `DotStyle` text effects (codec swap through `StyleSerializerMixin`) and `StringRenderOutputMixin` glyph hooks.
-- `AttributeUtilMixin` tooltip integration with Curios (verified against Curios 9.5.1 bytecode only).
+- `AttributeUtilMixin` tooltip integration with Curios: JEI's tooltip indexing over every curio now passes through it cleanly (see CHANGELOG `7e92bd1`), but the rendered tooltip lines have not been compared with 1.20.1 one by one.
+- GUI item particles (`ScreenParticleHandler`) render again after `7e92bd1`; only the Codex path was exercised, not hotbar/inventory emitters.
 - `ClientTick` double-increment quirk (tick counters advanced in both tick and render events) was kept for parity.
 - Dungeon music start/stop when entering and leaving structures (first time this code runs).
 - Boat passenger attachment points, shield-disable chance and projectile enchantment application follow vanilla 1.21.1 semantics and were not compared frame by frame with 1.20.1.

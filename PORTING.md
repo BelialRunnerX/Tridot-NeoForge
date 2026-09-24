@@ -134,6 +134,8 @@ No datagen sources exist in the repository (`src/generated` absent, no `GatherDa
 
 - **Dungeon music structure check** — `MusicModifier.DungeonMusic.isPlayerInStructure` called `getBoundingBox()` on `StructureStart.INVALID_START` (player outside the structure), which throws and crashed the server tick as soon as the now-active `Events.onServerTick` ran. Returns false for an invalid start.
 - **Loot entity targets** — vanilla renamed `killer/direct_killer/killer_player` to `attacker/direct_attacker/attacking_player` in 1.21. `TargetedLootCondition.TARGET_CODEC` accepts both spellings (writes the new one) so 1.20.1 loot modifiers such as Valoria's keep loading.
+- **Screen particle sprite sets** (first in-game play test) — `TridotScreenParticles.registerParticleFactory` copies the sprite sets of the world particles out of `ParticleEngine.spriteSets`, which only contains them after `TridotParticles.ClientRegistryEvents.registerParticles` has run. Both listen to `RegisterParticleProvidersEvent`; NeoForge fired the screen-particle listener first, so every GUI particle had a null sprite and the first one drawn (an item in Valoria's Codex) crashed the render thread. The listener is now `EventPriority.LOWEST`, `TridotScreenParticleType.Factory` also accepts the particle id and resolves the sprite set lazily on first use, and `GenericScreenParticle.render` skips a particle without a sprite. The 1.20.1 code relied on the same undefined ordering and happened to work.
+- **Curio tooltips with slot attributes** — `AttributeUtilMixin` rebuilt the modifier map with `AttributeUtil.sortedMap()`, a `TreeMultimap` sorted by `Holder#getKey`. Curios 9 puts its slot attributes into the map as `Holder.direct(SlotAttribute)`, for which `getKey()` is null, so the comparator threw (surfaced when JEI built its search index over every curio). The copy now mirrors the incoming map: `sortedMap()` when the input was a `SortedSetMultimap`, `LinkedHashMultimap` otherwise, so the ordering the caller chose is preserved.
 
 ## Unverified at runtime
 
@@ -141,7 +143,7 @@ These compile and follow the 1.21.1 APIs, but were not exercised in a running ga
 
 - **DotStyle codec swap** — depends on `Style.Serializer` being class-initialised before `ComponentSerialization.createCodec` reads `MAP_CODEC` (it is read lazily through `Codec.recursive`). If a mod forces the Component codec extremely early, effects would silently not serialise.
 - **`LootDataTypeMixin`** — `@ModifyVariable` on the generic `V value` argument of `LootDataType.deserialize`; it only acts when the value is a `JsonObject`, which is the case for datapack loading.
-- **`AttributeUtilMixin` / Curios** — verified against Curios 9.5.1 bytecode only; a future Curios release could stop calling `AttributeUtil.applyTextFor`.
+- **`AttributeUtilMixin` / Curios** — now exercised in game (JEI indexing every curio tooltip passes through it without errors), but a future Curios release could still stop calling `AttributeUtil.applyTextFor`.
 - **`StringRenderOutputMixin` local captures** — `CAPTURE_FAILSOFT`; if a coremod changes `Font.StringRenderOutput.accept`'s local layout the glyph hooks are skipped rather than crashing.
 - **Delayed render buffers under Iris** — `shadersDelayedRender` was ported 1:1 to `Matrix4fStack`; Iris' 1.21 pipeline was not tested.
 - **`GenericParticleRenderType`** returns an empty per-frame builder because Tridot particles write into the delayed render buffers; `ParticleEngine` skips uploading empty meshes.

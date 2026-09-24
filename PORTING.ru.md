@@ -136,6 +136,8 @@
 
 - **Проверка структуры для музыки данжей** — `MusicModifier.DungeonMusic.isPlayerInStructure` вызывал `getBoundingBox()` у `StructureStart.INVALID_START` (игрок вне структуры), что выбрасывает исключение и обрушивало серверный тик, как только заработал `Events.onServerTick`. Для невалидного старта возвращается false.
 - **Цели в условиях лута** — в 1.21 ванилла переименовала `killer/direct_killer/killer_player` в `attacker/direct_attacker/attacking_player`. `TargetedLootCondition.TARGET_CODEC` принимает оба написания (записывает новое), чтобы модификаторы лута из 1.20.1, например у Valoria, продолжали загружаться.
+- **Наборы спрайтов экранных частиц** (первый игровой тест) — `TridotScreenParticles.registerParticleFactory` берёт наборы спрайтов мировых частиц из `ParticleEngine.spriteSets`, где они появляются только после выполнения `TridotParticles.ClientRegistryEvents.registerParticles`. Оба слушают `RegisterParticleProvidersEvent`; NeoForge вызвал слушатель экранных частиц первым, поэтому у всех GUI-частиц спрайт был null, и первая же отрисованная (предмет в Кодексе Valoria) обрушила поток рендера. Теперь слушатель имеет приоритет `EventPriority.LOWEST`, `TridotScreenParticleType.Factory` принимает также id частицы и лениво находит набор спрайтов при первом использовании, а `GenericScreenParticle.render` пропускает частицу без спрайта. Код 1.20.1 полагался на тот же неопределённый порядок и работал по стечению обстоятельств.
+- **Подсказки курио с атрибутами слотов** — `AttributeUtilMixin` пересобирал карту модификаторов через `AttributeUtil.sortedMap()` — `TreeMultimap`, сортируемый по `Holder#getKey`. Curios 9 помещает в карту свои атрибуты слотов как `Holder.direct(SlotAttribute)`, у которых `getKey()` равен null, поэтому компаратор выбрасывал исключение (проявилось, когда JEI строил поисковый индекс по всем курио). Копия теперь повторяет форму входной карты: `sortedMap()`, если вход был `SortedSetMultimap`, иначе `LinkedHashMultimap`, так что порядок, выбранный вызывающим кодом, сохраняется.
 
 ## Не проверено в рантайме
 
@@ -143,7 +145,7 @@
 
 - **Подмена кодека DotStyle** — зависит от того, что `Style.Serializer` инициализируется до того, как `ComponentSerialization.createCodec` прочитает `MAP_CODEC` (читается лениво через `Codec.recursive`). Если какой-то мод форсирует кодек компонентов очень рано, эффекты молча не будут сериализоваться.
 - **`LootDataTypeMixin`** — `@ModifyVariable` на обобщённом аргументе `V value` в `LootDataType.deserialize`; срабатывает только когда значение — `JsonObject`, что верно при загрузке датапаков.
-- **`AttributeUtilMixin` / Curios** — проверено только по байткоду Curios 9.5.1; будущий релиз Curios может перестать вызывать `AttributeUtil.applyTextFor`.
+- **`AttributeUtilMixin` / Curios** — теперь опробовано в игре (индексация всех подсказок курио в JEI проходит через него без ошибок), но будущий релиз Curios всё ещё может перестать вызывать `AttributeUtil.applyTextFor`.
 - **Захваты локальных переменных в `StringRenderOutputMixin`** — `CAPTURE_FAILSOFT`; если coremod изменит раскладку локальных переменных `Font.StringRenderOutput.accept`, хуки глифов будут пропущены, а не вызовут падение.
 - **Отложенные буферы рендера под Iris** — `shadersDelayedRender` перенесён 1:1 на `Matrix4fStack`; конвейер Iris для 1.21 не тестировался.
 - **`GenericParticleRenderType`** возвращает пустой покадровый билдер, поскольку частицы Tridot пишут в отложенные буферы рендера; `ParticleEngine` пропускает загрузку пустых мешей.
