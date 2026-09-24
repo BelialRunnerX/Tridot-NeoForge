@@ -10,6 +10,10 @@ This repository is a **community port of [Tridot](https://github.com/KomaruPRO/T
 - **Do not contact the original author with concerns about this port.** The maintainer of *this* repository is responsible for it. Bugs, crashes, or questions about the NeoForge 1.21.1 build belong in this repository's issue tracker, not in the upstream Tridot repository.
 - You may use this port on the same terms as the original mod: whatever **licensing and permissions the original Tridot requires still apply here**. The repository ships the original `LICENSE` file unchanged (GNU GPL). If you redistribute or build on this port, you must keep complying with that license and with any conditions the original author has set.
 
+## Download
+
+Jars are published only on this repository's [Releases page](https://github.com/BelialRunnerX/Tridot-NeoForge/releases) (current: `v1.21.1-1.0.169`, marked pre-release). The port is not on CurseForge or Modrinth.
+
 ## Status
 
 **Working build, not fully validated.** Together with the Valoria port, the library loads, passes resource reload and shader compilation, and runs in a live world (client and dedicated server). Individual features (music modifiers, text effects, post-processing, percent armour, skins) still need targeted play-testing — see [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
