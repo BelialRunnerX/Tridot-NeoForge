@@ -25,17 +25,20 @@ public class TridotScreenParticles{
     public static ScreenParticleType<ScreenParticleOptions> HEART = registerType(new TridotScreenParticleType());
     public static ScreenParticleType<ScreenParticleOptions> SKULL = registerType(new TridotScreenParticleType());
 
+    // PORT NOTE (runtime fix): the factories now resolve their sprite set lazily by id (see
+    // TridotScreenParticleType.Factory) instead of capturing the result of getSpriteSet() at registration time, which is
+    // null when this listener runs before TridotParticles has registered the world particles.
     public static void registerParticleFactory(RegisterParticleProvidersEvent event) {
-        registerProvider(WISP, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("wisp"))));
-        registerProvider(TINY_WISP, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("tiny_wisp"))));
-        registerProvider(SPARKLE, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("sparkle"))));
-        registerProvider(STAR, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("star"))));
-        registerProvider(SQUARE, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("square"))));
-        registerProvider(DOT, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("dot"))));
-        registerProvider(CIRCLE, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("circle"))));
-        registerProvider(TINY_CIRCLE, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("tiny_circle"))));
-        registerProvider(HEART, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("heart"))));
-        registerProvider(SKULL, new TridotScreenParticleType.Factory(getSpriteSet(Tridot.ofTridot("skull"))));
+        registerProvider(WISP, new TridotScreenParticleType.Factory(Tridot.ofTridot("wisp")));
+        registerProvider(TINY_WISP, new TridotScreenParticleType.Factory(Tridot.ofTridot("tiny_wisp")));
+        registerProvider(SPARKLE, new TridotScreenParticleType.Factory(Tridot.ofTridot("sparkle")));
+        registerProvider(STAR, new TridotScreenParticleType.Factory(Tridot.ofTridot("star")));
+        registerProvider(SQUARE, new TridotScreenParticleType.Factory(Tridot.ofTridot("square")));
+        registerProvider(DOT, new TridotScreenParticleType.Factory(Tridot.ofTridot("dot")));
+        registerProvider(CIRCLE, new TridotScreenParticleType.Factory(Tridot.ofTridot("circle")));
+        registerProvider(TINY_CIRCLE, new TridotScreenParticleType.Factory(Tridot.ofTridot("tiny_circle")));
+        registerProvider(HEART, new TridotScreenParticleType.Factory(Tridot.ofTridot("heart")));
+        registerProvider(SKULL, new TridotScreenParticleType.Factory(Tridot.ofTridot("skull")));
     }
 
     public static <T extends ScreenParticleOptions> ScreenParticleType<T> registerType(ScreenParticleType<T> type) {

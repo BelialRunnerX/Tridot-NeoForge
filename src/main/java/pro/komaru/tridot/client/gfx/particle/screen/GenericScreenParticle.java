@@ -153,6 +153,11 @@ public class GenericScreenParticle extends TextureSheetScreenParticle{
         if (lifeDelay > 0) {
             return;
         }
+        // PORT NOTE (runtime fix): a particle whose sprite set was never bound has no sprite; skip drawing it instead of
+        // throwing from getU0() inside the screen renderer.
+        if (sprite == null) {
+            return;
+        }
 
         spriteData.renderTick(this, partialTicks);
         if (tracksStack) {

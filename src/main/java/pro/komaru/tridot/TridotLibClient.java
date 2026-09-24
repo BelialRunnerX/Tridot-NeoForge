@@ -93,7 +93,11 @@ public class TridotLibClient{
             ParticleEmitterHandler.registerEmitters(event);
         }
 
-        @SubscribeEvent
+        // PORT NOTE (runtime fix): screen particles borrow the sprite sets of the world particles registered in
+        // TridotParticles.ClientRegistryEvents. Both listen to the same event, and NeoForge does not guarantee the order
+        // of two @EventBusSubscriber classes; when this one ran first the sprite sets were still null and the first GUI
+        // particle (e.g. an item shown in Valoria's codex) crashed the client. LOWEST priority makes the order explicit.
+        @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
         public static void registerParticleFactory(RegisterParticleProvidersEvent event) {
             TridotScreenParticles.registerParticleFactory(event);
         }

@@ -30,7 +30,13 @@ public class AttributeUtilMixin{
 
         Player player = ctx.player();
         TooltipFlag flag = ctx.flag();
-        Multimap<Holder<Attribute>, AttributeModifier> copied = AttributeUtil.sortedMap();
+        // PORT NOTE (runtime fix): the rebuilt map must keep the shape of the incoming one. Vanilla passes
+        // AttributeUtil.sortedMap() (a TreeMultimap keyed by Holder#getKey), but Curios 9 passes a plain multimap that
+        // also contains its slot attributes as Holder.direct(...) — those have no registry key, so forcing them into the
+        // sorted map threw a NullPointerException from the comparator (seen while JEI indexed curio tooltips).
+        Multimap<Holder<Attribute>, AttributeModifier> copied = modifierMap instanceof SortedSetMultimap<?, ?>
+            ? AttributeUtil.sortedMap()
+            : LinkedHashMultimap.create();
         for(Map.Entry<Holder<Attribute>, AttributeModifier> entry : modifierMap.entries()){
             Holder<Attribute> key = entry.getKey();
             AttributeModifier modifier = entry.getValue();
