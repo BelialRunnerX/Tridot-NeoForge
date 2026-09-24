@@ -4,6 +4,7 @@ All notable changes to the port are listed here, newest first. The mod version s
 
 ## 2026-09-23 — fixes from the first in-game play test
 
+- `ded8025` **Fixed** server-side `NullPointerException` in `AbstractTridotArrow.getDefaultPickupItem` whenever a Tridot arrow was created (Valoria's Phantasm Bow fired nothing): vanilla's 1.21 `AbstractArrow` constructor calls that method before the subclass field `arrowItem` is initialised, so it is now null-safe.
 - `7e92bd1` **Fixed** client crash "Rendering screen … `particle.sprite` is null" when a GUI particle was drawn (first hit when opening Valoria's Codex, whose entries show items with wisp particles). `TridotLibClient.registerParticleFactory` ran before `TridotParticles` had registered the world particles, so every screen-particle factory captured a null sprite set. The listener now runs at `LOWEST` priority, `TridotScreenParticleType.Factory` resolves its sprite set lazily by id, and a particle without a sprite is skipped instead of crashing.
 - `7e92bd1` **Fixed** `NullPointerException` in `AttributeUtilMixin` while JEI indexed curio tooltips: Curios 9 passes its slot attributes as `Holder.direct(...)` (no registry key) and the mixin copied them into `AttributeUtil.sortedMap()`, whose comparator sorts by key. The rebuilt map now keeps the shape of the incoming one (`LinkedHashMultimap` unless the input was already sorted).
 
