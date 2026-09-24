@@ -37,6 +37,10 @@ public class MusicModifier{
         public boolean isPlayerInStructure(Player player, ServerLevel serverLevel) {
             // PORT NOTE: no ResourceKey overload in 1.21; match the structure holder by key.
             var structure = serverLevel.structureManager().getStructureWithPieceAt(player.blockPosition(), holder -> holder.is(structureKey));
+            // PORT NOTE: outside any matching structure this returns StructureStart.INVALID_START, whose getBoundingBox() throws
+            // "Unable to calculate boundingbox without pieces". The 1.20.1 code had the same hole but never ran (static handler on an
+            // instance registration); now that the dungeon-music tick is live it must bail out first.
+            if(!structure.isValid()) return false;
             return structure.getBoundingBox().isInside(player.getBlockX(), player.getBlockY(), player.getBlockZ());
         }
     }

@@ -117,6 +117,7 @@ No datagen sources exist in the repository (`src/generated` absent, no `GatherDa
 
 - **Shaders** (second client launch) — vanilla 1.21 `fog.glsl` changed `fog_distance(mat4, vec3, int)` to `fog_distance(vec3, int)` (positions are camera-relative now). `include/common.glsl`'s `fogDistance` wrapper keeps its 1.20.1 signature but ignores the matrix, so all Tridot core shaders (`additive`, `additive_texture`, `translucent`, `translucent_texture`) and dependents including `tridot:common.glsl` compile again. A failing `RegisterShadersEvent` makes Minecraft retry the resource reload endlessly (stuck on the Mojang screen), which is how this surfaced.
 
+- **Dungeon music structure check** — `MusicModifier.DungeonMusic.isPlayerInStructure` called `getBoundingBox()` on `StructureStart.INVALID_START` (player outside the structure), which throws and crashed the server tick as soon as the now-active `Events.onServerTick` ran. Returns false for an invalid start.
 - **Loot entity targets** — vanilla renamed `killer/direct_killer/killer_player` to `attacker/direct_attacker/attacking_player` in 1.21. `TargetedLootCondition.TARGET_CODEC` accepts both spellings (writes the new one) so 1.20.1 loot modifiers such as Valoria's keep loading.
 
 ## Unverified at runtime
