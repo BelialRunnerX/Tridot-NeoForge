@@ -12,7 +12,7 @@ This repository is a **community port of [Tridot](https://github.com/KomaruPRO/T
 
 ## Download
 
-Jars are published only on this repository's [Releases page](https://github.com/BelialRunnerX/Tridot-NeoForge/releases) (current: `v1.21.1-1.0.169`, marked pre-release). The port is not on CurseForge or Modrinth.
+Jars are published only on this repository's [Releases page](https://github.com/BelialRunnerX/Tridot-NeoForge/releases) (current: `v1.21.1-1.0.169-20260928`, marked pre-release). The port is not on CurseForge or Modrinth.
 
 ## Status
 

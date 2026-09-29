@@ -12,7 +12,7 @@
 
 ## Скачать
 
-Jar-файлы публикуются только на [странице Releases](https://github.com/BelialRunnerX/Tridot-NeoForge/releases) этого репозитория (текущий: `v1.21.1-1.0.169`, отмечен как предрелиз). Порт не размещён на CurseForge или Modrinth.
+Jar-файлы публикуются только на [странице Releases](https://github.com/BelialRunnerX/Tridot-NeoForge/releases) этого репозитория (текущий: `v1.21.1-1.0.169-20260928`, отмечен как предрелиз). Порт не размещён на CurseForge или Modrinth.
 
 ## Состояние
 

@@ -29,7 +29,7 @@ _None known at the moment._
 
 ## Unverified in game
 
-- Delayed render buffers / post-processing (`glow` post shader), especially under Iris.
+- Delayed render buffers / post-processing (`glow` post shader), especially under Iris. The Iris/Fabulous delayed path and trail-ribbon orientation were corrected on 2026-09-28 (`a9cf298`, Valoria issue #2) from the render code, and the automated harness still passes, but the result has not yet been compared on screen with 1.20.1 (Fancy, Fabulous and an Iris pack).
 - `DotStyle` text effects (codec swap through `StyleSerializerMixin`) and `StringRenderOutputMixin` glyph hooks.
 - `AttributeUtilMixin` tooltip integration with Curios: JEI's tooltip indexing over every curio now passes through it cleanly (see CHANGELOG `7e92bd1`), but the rendered tooltip lines have not been compared with 1.20.1 one by one.
 - GUI item particles (`ScreenParticleHandler`) render again after `7e92bd1`; only the Codex path was exercised, not hotbar/inventory emitters.

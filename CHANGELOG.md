@@ -2,6 +2,11 @@
 
 All notable changes to the port are listed here, newest first. The mod version stays `1.21.1-1.0.169` (upstream Tridot 1.0.169); entries are identified by date and commit. Every code-level change also carries a `// PORT NOTE:` comment and is described in [PORTING.md](PORTING.md). Open problems live in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
+## 2026-09-28 — trail particles and the shader/Fabulous render path (Valoria issue #2)
+
+- `a9cf298` **Fixed** trail ribbons (`TrailParticleBehavior`, `RenderBuilder.renderTrail`) being built in the wrong space. In 1.21 the camera rotation lives in `RenderSystem`'s model-view matrix instead of the level `PoseStack`, so the ribbon's screen-facing width was computed around world axes and the trail looked twisted or offset from its projectile depending on the view direction. `renderTrail` now takes the points into view space with the current model-view matrix, computes the perpendicular there (as 1.20.1 did) and maps the vertices back. Reported against Valoria's projectile trails in [Valoria-NeoForge#2](https://github.com/BelialRunnerX/Valoria-NeoForge/issues/2).
+- `a9cf298` **Fixed** the delayed-render path used with Iris shader packs and **Fabulous** graphics drawing every Tridot particle/trail batch without the camera rotation: at `AFTER_LEVEL` the 1.21 model-view stack is already back to identity and the captured matrix was never set on that path. All four batch groups are now drawn with the event's view matrix. The standard (Fast/Fancy) path is unchanged.
+
 ## 2026-09-23 — fixes from the first in-game play test
 
 - `ded8025` **Fixed** server-side `NullPointerException` in `AbstractTridotArrow.getDefaultPickupItem` whenever a Tridot arrow was created (Valoria's Phantasm Bow fired nothing): vanilla's 1.21 `AbstractArrow` constructor calls that method before the subclass field `arrowItem` is initialised, so it is now null-safe.
