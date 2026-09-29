@@ -694,11 +694,19 @@ public class RenderBuilder{
         return renderTrail(stack.last().pose(), trailSegments, widthFunc, vfxOperator);
     }
 
+    // PORT NOTE (runtime fix): 1.21 keeps the camera rotation in RenderSystem's model-view matrix instead of the level
+    // PoseStack, so the pose handed in here is only camera-relative. perpendicularTrailPoints() builds the ribbon in view
+    // space (in 1.20.1 the pose carried the rotation), so the points are taken into view space with the current
+    // model-view matrix and the emitted vertices are mapped back with its inverse; the model-view applied when the batch
+    // is drawn then gives the 1.20.1 picture. With an identity model-view (GUI, pre-rotated poses) nothing changes.
     public RenderBuilder renderTrail(Matrix4f pose, List<TrailPoint> trailSegments, Function<Float, Float> widthFunc, Consumer<Float> vfxOperator){
         if(trailSegments.size() < 2){
             return this;
         }
-        List<Vector4f> positions = trailSegments.stream().map(TrailPoint::getMatrixPosition).peek(p -> p.mul(pose)).toList();
+        Matrix4f view = new Matrix4f(com.mojang.blaze3d.systems.RenderSystem.getModelViewMatrix());
+        Matrix4f toView = new Matrix4f(view).mul(pose);
+        Matrix4f fromView = view.invert(new Matrix4f());
+        List<Vector4f> positions = trailSegments.stream().map(TrailPoint::getMatrixPosition).peek(p -> p.mul(toView)).toList();
         int count = trailSegments.size() - 1;
         float increment = 1.0F / count;
         TrailRenderPoint[] points = new TrailRenderPoint[trailSegments.size()];
@@ -711,7 +719,19 @@ public class RenderBuilder{
         }
         points[0] = new TrailRenderPoint(positions.get(0), Utils.Render.perpendicularTrailPoints(positions.get(0), positions.get(1), widthFunc.apply(0f)));
         points[count] = new TrailRenderPoint(positions.get(count), Utils.Render.perpendicularTrailPoints(positions.get(count - 1), positions.get(count), widthFunc.apply(1f)));
-        return renderPoints(points, u0, v0, u1, v1, vfxOperator);
+        VertexConsumer target = getVertexConsumer();
+        setVertexConsumer(new net.neoforged.neoforge.client.model.pipeline.VertexConsumerWrapper(target){
+            private final Vector3f tmp = new Vector3f();
+
+            @Override
+            public VertexConsumer addVertex(float x, float y, float z){
+                fromView.transformPosition(x, y, z, tmp);
+                parent.addVertex(tmp.x, tmp.y, tmp.z);
+                return this;
+            }
+        });
+        renderPoints(points, u0, v0, u1, v1, vfxOperator);
+        return setVertexConsumer(target);
     }
 
     public RenderBuilder renderTrail(List<TrailPoint> trailSegments, Function<Float, Float> widthFunc, Consumer<Float> vfxOperator){

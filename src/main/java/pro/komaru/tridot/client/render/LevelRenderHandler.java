@@ -78,26 +78,26 @@ public class LevelRenderHandler{
     }
 
     // PORT NOTE: RenderSystem.getModelViewStack() is a JOML Matrix4fStack in 1.21 (pushMatrix/identity/mul/popMatrix).
+    // PORT NOTE (runtime fix): this path runs for Iris shader packs and for Fabulous graphics. At AFTER_LEVEL the 1.21
+    // model-view stack has already been popped back to identity, and MATRIX4F is never captured while this path is
+    // active, so every delayed batch was drawn without the camera rotation (particles and trails "stuck" to the screen
+    // or offset from their emitters). In 1.21 all delayed vertices are camera-relative and unrotated (the rotation no
+    // longer lives in the level PoseStack), so every group is now drawn with the event's view matrix, as the standard
+    // path at AFTER_WEATHER already does.
     public static void shadersDelayedRender(RenderLevelStageEvent event){
         if(event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL){
             RenderSystem.setShaderFogStart(FOG_START);
             Matrix4fStack modelView = RenderSystem.getModelViewStack();
             modelView.pushMatrix();
             modelView.identity();
-            if(MATRIX4F != null) modelView.mul(MATRIX4F);
+            modelView.mul(event.getModelViewMatrix());
             RenderSystem.applyModelViewMatrix();
             for(RenderType renderType : TridotRenderTypes.translucentParticleRenderTypes) getDelayedRender().endBatch(renderType);
-            modelView.popMatrix();
-            RenderSystem.applyModelViewMatrix();
             for(RenderType renderType : TridotRenderTypes.translucentRenderTypes) getDelayedRender().endBatch(renderType);
-            modelView.pushMatrix();
-            modelView.identity();
-            if(MATRIX4F != null) modelView.mul(MATRIX4F);
-            RenderSystem.applyModelViewMatrix();
             for(RenderType renderType : TridotRenderTypes.additiveParticleRenderTypes) getDelayedRender().endBatch(renderType);
+            for(RenderType renderType : TridotRenderTypes.additiveRenderTypes) getDelayedRender().endBatch(renderType);
             modelView.popMatrix();
             RenderSystem.applyModelViewMatrix();
-            for(RenderType renderType : TridotRenderTypes.additiveRenderTypes) getDelayedRender().endBatch(renderType);
             FogRenderer.setupNoFog();
         }
     }
